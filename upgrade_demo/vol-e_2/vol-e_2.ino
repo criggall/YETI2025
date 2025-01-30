@@ -44,7 +44,8 @@ int distance;
 
 // Create data structure for position and temperature:
 struct Data_Package{
-  byte X; // position
+  byte X; // position coordinate 1
+  byte Y; // position coordinate 2
   byte T; // temperature
 };
 // Create variable with this structure:
