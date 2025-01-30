@@ -4,7 +4,7 @@ import struct
 from matplotlib import pyplot as plt
 
 # Establish serial connection with receiver Arduino:
-usb_port = 'COM3'
+usb_port = 'COM4'
 serial_connection = serial.Serial(usb_port, 9600, timeout=1)
 
 # Initialize position and temperature vectors:
@@ -12,23 +12,28 @@ X_values = []
 Y_values = []
 T_values = []
 
-# Read and plot data if receiving:
-if serial_connection.in_waiting > 1:
+while True:
 
     # Read and translate binary signal from Arduino:
     binary_data = serial_connection.read(3)
-    X, Y, T = struct.unpack('BBB', binary_data)
-    X_values.append(X)
-    Y_values.append(Y)
-    T_values.append(T)
+    if len(binary_data) == 3:
+        X, Y, T = struct.unpack('BBB', binary_data)
+        X_values.append(X)
+        Y_values.append(Y)
+        T_values.append(T)
 
-    # Update and plot heat map:
-    plt.figure(1)
-    plt.plot(X_values, Y_values, T_values, cmap='viridis')
-    plt.savefig('heat_map.png', dpi=300)
+        # Plot heat map:
+        if len(X_values) > 1:
+            plt.figure(1)
+            plt.scatter(X_values, Y_values, c=T_values, cmap='viridis')
+            plt.colorbar(label=r'Temperature ($^\circ$F)')
+            plt.xlabel('Position (arbitrary)')
+            plt.ylabel('Position (arbitrary)')
+            plt.plot(X_values, Y_values, color='gray', linestyle='-', linewidth=0.5)
+            plt.savefig('heat_map.png', dpi=300)
+            plt.clf()
+            print('Plot updated!')
 
-# Reset variables if no longer receiving:
-else:
-    X_values = []
-    Y_values = []
-    T_values = []
+    # Print notice if no data is being received:
+    else:
+        print('Awaiting data...')
